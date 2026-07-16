@@ -1,0 +1,51 @@
+name: Build EPUB
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install codespell
+        run: pip install codespell
+
+      - name: Lint (markdownlint)
+        run: npx markdownlint-cli course/*.md docs/*.md ROADMAP.md README.md
+
+      - name: Spell check
+        run: codespell course/*.md docs/*.md ROADMAP.md README.md
+
+      - name: Format check
+        run: npx prettier --check course/*.md docs/*.md ROADMAP.md README.md
+
+      - name: Link check
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: course/*.md docs/*.md ROADMAP.md README.md --verbose --no-progress
+
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install pandoc
+        run: sudo apt-get update && sudo apt-get install -y pandoc
+
+      - name: Build EPUB
+        run: make epub
+
+      - name: Upload EPUB
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-roadmap
+          path: backend-roadmap.epub
