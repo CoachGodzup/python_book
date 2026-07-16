@@ -74,6 +74,9 @@
 - Docker già lo sai
 - Debugging via `breakpoint()` è come `debugger;`
 
+## Future
+- GitHub Pages: pubblicare corso come sito statico (mdbook, Hugo, Jekyll)
+
 ## Progetti pratici (in ordine)
 1. API CRUD con FastAPI + SQLite (nessun auth)
 2. Aggiungi auth JWT + refresh token
