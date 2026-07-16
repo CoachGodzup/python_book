@@ -1,0 +1,145 @@
+# Capitolo 1 — Python Fundamentals
+
+## Perché Python?
+
+Se vieni dal frontend (JavaScript/TypeScript), Python è un cambio di paradigma interessante. JavaScript è nato per il browser, Python per la leggibilità. Mentre JS è "anything goes", Python impone un certo ordine. Non è più rigido di TypeScript, ma lo è in modo diverso: l'indentazione è sintassi, non c'è `const` vs `let`, e l'asincronia è esplicita con `async/await` (ma con un event loop completamente diverso).
+
+Python è il linguaggio dominante per backend API, data science, automazione e AI. Se vuoi fare backend, non puoi ignorarlo.
+
+## Type Hints
+
+Python ha type hints opzionali (PEP 484). A differenza di TypeScript, non vengono enforceati a runtime — servono a te, all'IDE e a strumenti come `mypy` o `pyright`.
+
+```python
+def sum_even(numbers: list[int]) -> int:
+    return sum(n for n in numbers if n % 2 == 0)
+```
+
+La sintassi è simile a TypeScript ma con differenze importanti:
+- `list[int]` non `number[]` o `Array<number>`
+- `dict[str, int]` non `Record<string, number>`
+- `Optional[int]` o `int \| None` (Python 3.10+)
+- `-> int` per il tipo di ritorno
+
+## Sequence e Collection
+
+Le strutture dati fondamentali sono simili a JS:
+- `list` (array), `dict` (object/Map), `tuple` (array fisso), `set` (Set)
+- List comprehension: `[x*2 for x in range(10) if x % 2 == 0]`
+- Dict comprehension: `{k: v for k, v in items if v > 0}`
+
+La list comprehension sostituisce `filter()` + `map()` in una sola riga leggibile.
+
+## Funzioni: *args e **kwargs
+
+In JS usi `...rest`; in Python usi `*args` (tuple posizionale) e `**kwargs` (dict keyword):
+
+```python
+def log_event(event: str, **metadata: str | int) -> None:
+    print(f"[{event}] {metadata}")
+
+log_event("login", user_id=1, ip="10.0.0.1")  # ✅
+```
+
+## Async in Python
+
+L'asincronia in Python è diversa da JS. In JS, `await` blocca l'event loop fino al completamento. In Python, funziona in modo simile ma devi esplicitamente creare un event loop con `asyncio.run()`. Non esiste "microtask queue" automatica.
+
+```python
+import asyncio
+
+async def fetch_data():
+    await asyncio.sleep(1)
+    return {"data": "ok"}
+
+async def main():
+    result = await fetch_data()
+    print(result)
+
+asyncio.run(main())
+```
+
+Per parallelizzare: `asyncio.gather()` è il `Promise.all()` di Python.
+
+## Pydantic: il TypeScript di Python
+
+Pydantic è la libreria che rende Python tipo-sicuro a runtime (validazione). Se TypeScript è compile-time, Pydantic è runtime. Un modello Pydantic è come un'interfaccia TypeScript con validazione:
+
+```python
+from pydantic import BaseModel, field_validator
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    age: int
+
+    @field_validator("age")
+    @classmethod
+    def must_be_adult(cls, v: int) -> int:
+        if v < 18:
+            raise ValueError("User must be adult")
+        return v
+```
+
+## Context Manager
+
+Il `with` statement in Python non ha equivalente diretto in JS. Gestisce risorse (file, DB connection) che devono essere aperte e chiuse:
+
+```python
+with open("file.txt") as f:
+    data = f.read()
+# f è chiuso automaticamente
+```
+
+Puoi crearli con `contextlib.contextmanager`:
+
+```python
+from contextlib import contextmanager
+from time import time
+
+@contextmanager
+def timer():
+    start = time()
+    yield
+    print(f"Took {time() - start:.2f}s")
+
+with timer():
+    ...  # codice da cronometrare
+```
+
+## Pattern Matching (Python 3.10+)
+
+Equivalente di `switch`/`match` in Rust o Swift, ma più potente:
+
+```python
+def parse_event(event: dict) -> str:
+    match event:
+        case {"type": "click", "x": x, "y": y}:
+            return f"Clicked at ({x}, {y})"
+        case {"type": "keypress", "key": key}:
+            return f"Key pressed: {key}"
+        case _:
+            return "Unknown event"
+```
+
+## Dataclass
+
+Più leggero di Pydantic, senza validazione a runtime:
+
+```python
+from dataclasses import dataclass
+
+@dataclass
+class Product:
+    name: str
+    price: float
+    quantity: int = 0
+```
+
+## Perché questi concetti?
+
+Prima di toccare un framework web, devi sentirti a tuo agio con questi mattoncini. FastAPI usa Pydantic per la validazione, dipende da type hints per la documentazione automatica, e usa `async/await` per ogni request handler. SQLAlchemy usa context manager per le sessioni. Tutto torna.
+
+## Collegamento al prossimo capitolo
+
+Nel prossimo capitolo esploreremo come questi dati viaggiano sulla rete. Non basta saper creare strutture dati — devi capire HTTP, TCP, e come il web trasporta JSON da un server a un client.
