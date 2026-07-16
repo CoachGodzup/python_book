@@ -45,7 +45,7 @@ jobs:
         run: make epub
 
       - name: Upload EPUB
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: backend-roadmap
           path: backend-roadmap.epub
